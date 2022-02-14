@@ -1,0 +1,193 @@
+#!/bin/python3
+# Look for open wifi hotspots, connect, harvest router ip
+# Main issue: open spots are not efficiently found; need better method
+from os import path  
+from os import system as sys
+from os import geteuid as usertype
+from sys import exit as terminate
+from termcolor import colored as color
+from re import findall as find
+from urllib import request
+from time import sleep
+
+# ============ Functions ============
+
+def info(content, bad=False):
+    '''
+    This prints info to the terminal in a fancy way
+    '''
+    if not bad:
+        print(color('[i] ', 'blue') + color(content, 'white'))
+        
+    else:
+        print(color('[X] ', 'red') + color(content, 'white'))
+
+
+def scan():  # Function 1
+    '''
+    This orders a scan of the environment and displays the results
+    if no hotspots are located. This is the main function of the script.
+    '''
+    sys('sudo nmcli dev wifi rescan')
+    sys('sudo nmcli dev wifi > hotspots')
+    sys('sudo chmod 755 hotspots')
+    with open('hotspots', 'r') as file:
+        spots = file.read()
+        sys('clear')  # Clears the terminal 
+        print(color(spots, 'white'))  # Prints wifi hotspots around you 
+        
+        # 1. Split file by newline
+        spots = spots.split('\n')
+        
+        # 2. Determine if there's an open spot
+        for spot in spots:
+            try:
+                bssid = spot.split(' ')[8]  # At [8] lies the BSSID
+            
+            except:  # Something is going wrong
+                with open('blackbox', 'a') as blackbox:
+                    blackbox.write(str(spot.split(' ')) + '\n')
+                    continue
+            
+            
+            if '--' in spot and not inBlacklist(bssid):  # If the hotspot is open and not in the blacklist
+                # 3. Connect to hotspot               
+                if connect(bssid) and internetAccess():
+                    ip = harvestIP()
+                    if not ip == 'err':  # If the error code was not returned
+                        saveInfo(ip)  # Write the info to the file
+                        continue
+                        
+                    else:  # If for some reason an error popped up
+                        addToBlacklist(bssid)
+                        continue
+                else:
+                   addToBlacklist(bssid)
+                   continue
+        
+def connect(bssid):  # Function 2
+    '''
+    This connects to a hotspot
+    
+    :Param: string BSSID
+    :Return: bool indicating status
+    '''
+    
+    # 1. Connect to wifi hotspot
+    info('Attempting to connect to hotspot')
+    sys('sudo nmcli dev wifi rescan')
+    sys('sudo nmcli dev wifi connect %s > status' % bssid)
+    sys('sudo chmod 755 status')
+    with open('status', 'r') as file:
+        if 'successfully activated' in file.read():
+            sys('sudo rm status')
+            info('Connected')
+            return True
+        else:
+            sys('sudo rm status')
+            info('Failed to connect', bad=True)
+            return False
+
+def internetAccess():  # Function 3
+    '''
+    This function determines if the connection has internet by pinging
+    Google's DNS
+    
+    :Return: bool representing the ability to access internet
+    '''
+    
+    info('Testing internet access')
+    sys('ping -c4 8.8.8.8 > pingInfo')
+    sys('sudo chmod 755 pingInfo')
+    with open('pingInfo', 'r') as file:
+        try:
+            content = file.read().split('\n')[7].split(' ')[3]
+            if int(content) > 0:  # As long as one ICMP ping was recieved
+                info('Internet access confirmed')
+                return True
+            else:
+                info('No internet access', bad=True)
+                return False
+                
+        except Exception as e:  # Something has gone wrong. Report failure
+            info('Error: %s' + str(e))
+            with open('blackbox', 'a') as blackbox:
+                blackbox.write(str(e) + '\n')
+            return False
+    
+
+def inBlacklist(bssid):
+    '''
+    Determines if bssid is in blacklist
+    
+    :Param bssid: string BSSID
+    :Return: bool representing membership; true if in, false otherwise
+    '''
+    try:
+        with open('blacklist.txt', 'r') as file:
+            content = file.read()
+            if bssid in content:
+                return True
+            else:
+                return False
+    except:  # Likely cause is that the file does not exist 
+        return False
+        
+
+def addToBlacklist(bssid):
+    '''
+    This function adds a bssid to the blacklist
+    
+    :Parm: string bssid
+    :Return: None
+    '''
+    with open('blacklist.txt', 'a') as file:
+        file.write(bssid + '\n')
+        info('Added %s to blacklist' % bssid, bad=True)    
+    
+        
+def harvestIP():  # Function 4
+    '''
+    This retrieves an IP address
+    
+    :Return: string ip
+    '''
+    
+    info('Trying to get IP address')
+    try:
+        html = request.urlopen('https://check.torproject.org/?lang=en_US').read().decode('utf-8')  # Ask torproject to check ip
+        visIP = find('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', string=html)  # Find IP in webpage
+        return visIP
+    
+    except:
+        info('Faild to acquire IP address', bad=True)
+        return 'err'  # If err, I want the script to try again for 6 more times
+    
+def saveInfo(ip):  # Function 5
+    '''
+    This saves the ip to the output list
+    
+    :Param ip: string ip address
+    :Return: None
+    '''
+    with open('ips.txt', 'a') as file:
+        file.write(ip + '\n')
+        info('Saved IP address to file')
+
+# ============ START HUNT ============
+
+
+# 1. Determine user type, require root
+if not usertype() == 0:
+     info('Must run script as root', bad=True)
+     exit()
+
+# 2. Start hunting loop
+ct = 0
+wait = 3
+while True:
+    scan()
+    info('Current iteration: %s' % str(ct))
+    info('Waiting for %s seconds ...' % str(wait))
+    ct += 1
+    sleep(wait)
