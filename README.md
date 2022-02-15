@@ -1,5 +1,5 @@
 # whosopen
-This script will help me satisfy my curiosity about how many WAPs are purely open, without any authentication mechanisms whatsoever (not even an agree to AUP prompt). This is a proof of concept script to help map out public wifi spots and should **not** be used for malicious purposes.   
+Script that allows you to scan for unauthenticated public wifi hotspots and get their IP address. This is a proof of concept script written to help map out public wifi spots and should **not** be used for malicious purposes. It was written out of boredom and curiosity.  
 
 # Using whosopen
 
