@@ -8,7 +8,7 @@ whosopen is only avaliable to Linux users, no version for Windows is going to be
 To set up and use whosopen, enter the following into the terminal:
 
 1. cd \<replace this with the dir where you downloaded whosopen to\>
-2. chmod +x whosopen
-3. sudo whosopen \<optional number frequency argument\>
+2. chmod +x ./whosopen
+3. sudo ./whosopen \<optional number frequency argument\>
 
 To stop scanning, press CTRL+C repeatedly until it ends.
