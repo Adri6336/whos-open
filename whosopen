@@ -2,12 +2,11 @@
 # Look for open wifi hotspots, connect, harvest ip
 # Main issue: open spots are not efficiently found (bot grabs hidden too).
 #             Future update: ensure only open are grabbed
-from os import path  
 from os import system as sys  # Allows me to control network manager
 from os import geteuid as usertype  # Allows me to prevent non-root use
 from sys import exit as terminate  # Allows me to generate exit codes
 from sys import argv  # Allows me to read arguments
-from termcolor import colored as color  # Allows me to make the terminal diplay colorful
+from termcolor import colored as color  # Allows me to make the terminal display colorful
 from re import findall as find  # Allows me to use regular expressions
 from urllib import request  # Allows me to send a web request to get the ip
 from time import sleep  # Allows me to limit the speed, reducing CPU demand
