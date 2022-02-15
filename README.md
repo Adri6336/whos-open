@@ -15,4 +15,8 @@ To stop scanning, press CTRL+C repeatedly until it ends.
 
 # Hopes and Dreams
 
-Maybe in the future I'll include some kind of function to map IP addesses to approximate coordinates in order to make a pretty map for social media sharing or personal knowledge (good to know where you can get that sweet sweet, modern life enabling, wifi), n stuff. Btw, if you want to use this to map out public wifi for personal use, please use a VPN with it. Public wifi be nasty: you don't know if the hotspot you're connecting to is malicious and sniffing all your packets 
+Maybe in the future I'll include some kind of function to map IP addesses to approximate coordinates (script assumes you don't have GPS) in order to make a pretty map for social media sharing or personal knowledge (good to know where you can get that sweet sweet, modern life enabling, wifi), n stuff. Btw, if you want to use this to map out public wifi for personal use, please use a VPN with it. Public wifi be nasty: you don't know if the hotspot you're connecting to is malicious and sniffing all your packets.
+
+# Notes
+
+If you want to use this to make a map of open hotspots, do it quickly after data collection. IP addresses are dynammically allocated by ISPs, so your data will expire quickly.
