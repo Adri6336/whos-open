@@ -3,7 +3,7 @@ Script that allows you to scan for unauthenticated public wifi hotspots and get 
 
 # Using whosopen
 
-whosopen is only avaliable to Linux users, no version for Windows is going to be developed. Your distro must have nmcli and python3 in order for this to work.
+whosopen only works with Linux systems, no version for Windows is going to be developed. Your distro must have nmcli and python3 in order for this to work.
 
 To set up and use whosopen, enter the following into the terminal:
 
