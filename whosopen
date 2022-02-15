@@ -83,7 +83,7 @@ def connect(bssid):  # Function 2
         if 'successfully activated' in file.read():
             sys('sudo rm status')  # Delete temporary file
             info('Connected')
-            return True  # True represents that teh connection was successful
+            return True  # True represents that the connection was successful
         else:
             sys('sudo rm status')
             info('Failed to connect', bad=True)
@@ -98,7 +98,7 @@ def internetAccess():  # Function 3
     '''
     
     info('Testing internet access')
-    sys('ping -c4 8.8.8.8 > pingInfo')  # Pinging Google's DNS server should work to identify access
+    sys('ping -c4 8.8.8.8 > pingInfo')  # Pinging Google's DNS server should work to identify access; does this 4x
     sys('sudo chmod 755 pingInfo')
     with open('pingInfo', 'r') as file:
         try:
@@ -137,7 +137,7 @@ def addToBlacklist(bssid):
     '''
     This function adds a bssid to the blacklist
     
-    :Parm: string bssid
+    :Param: string bssid
     :Return: None
     '''
     with open('blacklist.txt', 'a') as file:  # Create or append to the blacklist
