@@ -30,11 +30,11 @@ def scan():  # Function 1
     This orders a scan of the environment and displays the results
     if no hotspots are located. This is the main function of the script.
     '''
-    sys('sudo nmcli dev wifi rescan')
-    sys('sudo nmcli dev wifi > hotspots')
-    sys('sudo chmod 755 hotspots')
-    with open('hotspots', 'r') as file:
-        spots = file.read()
+    sys('sudo nmcli dev wifi rescan')  # Scan environment now
+    sys('sudo nmcli dev wifi > hotspots')  # Send info over environment to file
+    sys('sudo chmod 755 hotspots')  # Change this file's permissions
+    with open('hotspots', 'r') as file:  # Open the new file in Python
+        spots = file.read()  # Save the file's content to spots
         sys('clear')  # Clears the terminal 
         print(color(spots, 'white'))  # Prints wifi hotspots around you 
         
@@ -47,8 +47,8 @@ def scan():  # Function 1
                 bssid = spot.split(' ')[8]  # At [8] lies the BSSID
             
             except:  # Something is going wrong
-                with open('blackbox', 'a') as blackbox:
-                    blackbox.write(str(spot.split(' ')) + '\n')
+                with open('blackbox', 'a') as blackbox:  # Open bug record file
+                    blackbox.write(str(spot.split(' ')) + '\n')  # Add the info for later review
                     continue
             
             
@@ -78,17 +78,17 @@ def connect(bssid):  # Function 2
     # 1. Connect to wifi hotspot
     info('Attempting to connect to hotspot')
     sys('sudo nmcli dev wifi rescan')
-    sys('sudo nmcli dev wifi connect %s > status' % bssid)
+    sys('sudo nmcli dev wifi connect %s > status' % bssid)  # Connect to BSSID and output to file
     sys('sudo chmod 755 status')
     with open('status', 'r') as file:
         if 'successfully activated' in file.read():
-            sys('sudo rm status')
+            sys('sudo rm status')  # Delete temporary file
             info('Connected')
-            return True
+            return True  # True represents that teh connection was successful
         else:
             sys('sudo rm status')
             info('Failed to connect', bad=True)
-            return False
+            return False  # False represents that the connection failed
 
 def internetAccess():  # Function 3
     '''
@@ -99,20 +99,20 @@ def internetAccess():  # Function 3
     '''
     
     info('Testing internet access')
-    sys('ping -c4 8.8.8.8 > pingInfo')
+    sys('ping -c4 8.8.8.8 > pingInfo')  # Pinging Google's DNS server should work to identify access
     sys('sudo chmod 755 pingInfo')
     with open('pingInfo', 'r') as file:
         try:
-            content = file.read().split('\n')[7].split(' ')[3]
+            content = file.read().split('\n')[7].split(' ')[3]  # This gets the value associated with recieved responses
             if int(content) > 0:  # As long as one ICMP ping was recieved
                 info('Internet access confirmed')
-                return True
+                return True  # True represents internet access
             else:
                 info('No internet access', bad=True)
                 return False
                 
         except Exception as e:  # Something has gone wrong. Report failure
-            info('Error: %s' % str(e))  # These failures dont tend to be an issue
+            info('Error: %s' % str(e))  # These failures dont tend to be an issue; may indicate authentication requirement
             return False
     
 
@@ -124,13 +124,13 @@ def inBlacklist(bssid):
     :Return: bool representing membership; true if in, false otherwise
     '''
     try:
-        with open('blacklist.txt', 'r') as file:
-            content = file.read()
-            if bssid in content:
-                return True
+        with open('blacklist.txt', 'r') as file:  # Open blacklist file
+            content = file.read()  # Get content of blacklist
+            if bssid in content:  # If you can find the requested BSSID, it has been blacklisted
+                return True  # True represents that it was found
             else:
                 return False
-    except:  # Likely cause is that the file does not exist 
+    except:  # Likely cause is that the file does not exist as it hasn't been created yet 
         return False
         
 
@@ -141,8 +141,8 @@ def addToBlacklist(bssid):
     :Parm: string bssid
     :Return: None
     '''
-    with open('blacklist.txt', 'a') as file:
-        file.write(bssid + '\n')
+    with open('blacklist.txt', 'a') as file:  # Create or append to the blacklist
+        file.write(bssid + '\n')  # Write the bad BSSID to blacklist file
         info('Added %s to blacklist' % bssid, bad=True)    
     
         
@@ -155,15 +155,16 @@ def harvestIP():  # Function 4
     
     info('Trying to get IP address')
     try:
+        # The HTML variable is obtained by asking duckduckgo what's the ip and decoding the response
         html = request.urlopen('https://duckduckgo.com/?q=whats+my+ip&ia=answer').read().decode('utf-8')
-        visIP = find('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', string=html)[0]  # Find IP in webpage
-        with open('bufferIP', 'a') as file:
+        visIP = find('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', string=html)[0]  # Find IP in request HTTP response
+        with open('bufferIP', 'a') as file:  # Potentially unnecessary premature saving of found data (will be removed later)
             file.write(str(visIP) + '\n') 
-        return visIP
+        return visIP  # Return IP
     
     except:
         info('Faild to acquire IP address', bad=True)
-        return 'err'  # If err, I want the script to try again for 6 more times
+        return 'err'  # If err, the bot failed to get a correct response 
     
 def saveInfo(ip):  # Function 5
     '''
@@ -173,8 +174,8 @@ def saveInfo(ip):  # Function 5
     :Return: None
     '''
     try:
-        with open('ips.txt', 'a') as file:
-            file.write(ip + '\n')
+        with open('ips.txt', 'a') as file:  # This is the file that will contain the sweet sweet IP addresses
+            file.write(ip + '\n')  # Wirte each address and a newline character 
             info('Saved IP address to file')
     
     except Exception as e:
@@ -183,14 +184,14 @@ def saveInfo(ip):  # Function 5
 # ============ START HUNT ============
 
 try:  # Get sleep time argument if there
-    wait = float(argv[1])
+    wait = float(argv[1])  # This must be a numerical value 
 except:
-    wait = 3
+    wait = 3  # If no numercial value was inputted, default wait is three seconds
 
 
 # 1. Determine user type, require root
-if not usertype() == 0:
-     info('Must run script as root', bad=True)
+if not usertype() == 0:  # If the user is not root
+     info('Must run script as root', bad=True)  # Scold user
      terminate(1)  # Report failure
 
 # 2. Start hunting loop
